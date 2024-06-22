@@ -1,6 +1,5 @@
 IFCS2 SUM 1
 ---
-'test for PAK'
 For this assignment, you are tasked with designing and building a Minimum Viable
 Product (MVP) for a GUI application within the Employee Management Systems(EMS) domain. It could be an event register, a diversity needs tracker, an employee performance tracker, or any other concept related to Employee Management Systems (EMS).
 
