@@ -1,6 +1,7 @@
 # todo
 
-- initial tk program
+- / initial tk program
+- frames
 - dialouges
 - regex
 - error pop ups
