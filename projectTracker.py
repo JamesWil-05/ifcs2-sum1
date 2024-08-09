@@ -13,14 +13,7 @@ class myApp(tk.Tk):
           self.config(bg = "skyblue")
           self.data = csvHandler()
           self.data.read()
-          self.data.get()
 
-
-class mainScreen(ttk.Frame):
-     def __init__(self, data):
-          super().__init__()
-          l1 = ttk.Label(self, text="test")
-          l1.pack()
 
 class editorScreen(tk.Toplevel):
      pass
@@ -33,7 +26,7 @@ class csvHandler():
      def read(self):
           if not os.path.isfile(self.filepath):
                print(f"Error: File '{self.filepath}' does not exist.")
-               return
+               return 
           try:
                with open(self.filepath, newline='') as infile:
                     reader = csv.reader(infile)
@@ -46,6 +39,10 @@ class csvHandler():
           except Exception as e:
                print(f"An unexpected error occurred: {e}")
      def write(self):
+          with open(self.filepath, 'w', newline='') as outfile:
+               writer = csv.writer(outfile)
+               writer.writerow(self.headers)
+               writer.writerows(self.data)
           pass
      def add_row(self, to_add):
           self.data.append(to_add)
