@@ -22,18 +22,25 @@ class ResourceManager(tk.Tk):
         self.add_button = tk.Button(self.button_frame, text="Add Row", command=self.donothing, bg="lightgreen")
         self.add_button.pack(padx=10, pady=10, side="left")
 
-        self.delete_button = tk.Button(self.button_frame, text="Delete Row", command=self.donothing, bg="tomato")
+        self.delete_button = tk.Button(self.button_frame, text="Delete Row", command=self.delete_row, bg="tomato")
         self.delete_button.pack(padx=10, pady=10, side="left")
 
-        self.save_button = tk.Button(self.button_frame, text="Save Changes and exit", command=quit, bg="snow")
+        self.save_button = tk.Button(self.button_frame, text="Save Changes and exit", command=self.save_exit, bg="snow")
         self.save_button.pack(padx=10, pady=10, side="right")
 
         self.tree_frame = tk.Frame(self)
         self.tree_frame.pack(fill= tk.BOTH, expand= True)
-        self.tree= None
+
+        self.tree=self.tree = ttk.Treeview(self.tree_frame)
+        self.tree.pack(fill=tk.BOTH, expand=True)
+
         self.fill_table()
     def donothing(self):
         print("test")
+    def save_exit(self):
+        self.data.write()
+        quit()
+
     def fill_table(self):
         if self.tree:
             self.tree.destroy()
@@ -50,30 +57,41 @@ class ResourceManager(tk.Tk):
 
         self.tree.bind("<Double-1>", self.edit_val)
     def edit_val(self, event):
-        item = self.tree.selection()[0]
+        row = self.tree.selection()[0]
         col = self.tree.identify_column(event.x)
         column_index = int(col.replace("#", "")) - 1
         column_name = self.tree["columns"][column_index]
-        old_value = self.tree.item(item, "values")[column_index]
+        old_value = self.tree.item(row, "values")[column_index]
+        editorScreen(self, row, column_index, column_name, old_value)
 
+    def delete_row(self):
+        if self.tree.selection():
+            row = self.tree.selection()[0]
+            row_index = self.tree.index(row)
+            self.data.delete_row(row_index)
+            self.fill_table()
+        else:
+            messagebox.showwarning(title="Error", message="Select a row first")
 
-        editorScreen(self, item, column_index, column_name, old_value)
 class editorScreen(tk.Toplevel):
-    def __init__(self, parent, item, col_index, col_name, old_value):
+    def __init__(self, parent, row, col, col_name, old_value):
         super().__init__(parent)
         self.title("Edit Value")
         self.geometry("300x200")
         self.parent = parent
-        self.item = item
-        self.col_index = col_index
+        self.row = row
+        self.col = col
 
         tk.Label(self, text="Edit value:").pack(pady=10)
-        self.new_value_entry = tk.Entry(self)
-        self.new_value_entry.pack(pady=10)
-        self.new_value_entry.insert(0, old_value)
+        self.new_value_input = tk.Entry(self)
+        self.new_value_input.pack(pady=10)
+        self.new_value_input.insert(0, old_value)
 
         tk.Button(self, text="Save", command=self.save_edit).pack(pady=10)
     def save_edit(self):
+        new_value = self.new_value_input.get()
+        self.parent.tree.set(self.row, column=self.parent.tree["columns"][self.col], value=new_value)
+        self.parent.data.update(self.parent.tree)
         self.destroy()
 
 
@@ -113,6 +131,14 @@ class csvHandler():
     def add_row(self, to_add):
         self.data.append(to_add)
 
+    def delete_row(self):
+        pass
+
+    def update(self, tree):
+        self.data=[]
+        for item in tree.get_children():
+            values = tree.item(item)["values"]
+            self.data.append(values)
     def get(self):
         return self.data
 
