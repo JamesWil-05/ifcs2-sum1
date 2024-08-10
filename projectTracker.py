@@ -9,7 +9,7 @@ import csv  # used to read and write from the csv file
 class ResourceManager(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.geometry("800x200")
+        self.geometry("800x350")
         self.title("Resource Allocator")
         self.config(bg="skyblue")
         self.data = csvHandler()
@@ -19,7 +19,7 @@ class ResourceManager(tk.Tk):
         self.button_frame = tk.Frame(self, bg="skyblue")
         self.button_frame.pack(fill= tk.BOTH)
 
-        self.add_button = tk.Button(self.button_frame, text="Add Row", command=self.donothing, bg="lightgreen")
+        self.add_button = tk.Button(self.button_frame, text="Add Row", command=self.add_row, bg="lightgreen")
         self.add_button.pack(padx=10, pady=10, side="left")
 
         self.delete_button = tk.Button(self.button_frame, text="Delete Row", command=self.delete_row, bg="tomato")
@@ -34,13 +34,13 @@ class ResourceManager(tk.Tk):
         self.tree=self.tree = ttk.Treeview(self.tree_frame)
         self.tree.pack(fill=tk.BOTH, expand=True)
 
+        self.explain_label = tk.Label(text="To edit a value double click on its cell", bg="skyblue")
+        self.explain_label.pack(pady=10)
+
         self.fill_table()
-    def donothing(self):
-        print("test")
     def save_exit(self):
         self.data.write()
         quit()
-
     def fill_table(self):
         if self.tree:
             self.tree.destroy()
@@ -68,34 +68,81 @@ class ResourceManager(tk.Tk):
         if self.tree.selection():
             row = self.tree.selection()[0]
             row_index = self.tree.index(row)
-            self.data.delete_row(row_index)
+            self.data.delete(row_index)
             self.fill_table()
         else:
             messagebox.showwarning(title="Error", message="Select a row first")
+    def add_row(self):
+        addScreen(self)
 
 class editorScreen(tk.Toplevel):
     def __init__(self, parent, row, col, col_name, old_value):
         super().__init__(parent)
         self.title("Edit Value")
         self.geometry("300x200")
+        self.config(bg="skyblue")
         self.parent = parent
         self.row = row
         self.col = col
+        self.col_name = col_name
 
-        tk.Label(self, text="Edit value:").pack(pady=10)
+        self.edit_label = (tk.Label(self, text="Edit value:", bg="skyblue"))
+        self.edit_label.pack(pady=10)
         self.new_value_input = tk.Entry(self)
         self.new_value_input.pack(pady=10)
         self.new_value_input.insert(0, old_value)
 
-        tk.Button(self, text="Save", command=self.save_edit).pack(pady=10)
+        self.save_button = tk.Button(self, text="Save", command=self.save_edit, bg="lightgreen")
+        self.save_button.pack(pady=10)
     def save_edit(self):
         new_value = self.new_value_input.get()
+        self.parent.data.value_check(new_value, self.col_name)
         self.parent.tree.set(self.row, column=self.parent.tree["columns"][self.col], value=new_value)
         self.parent.data.update(self.parent.tree)
         self.destroy()
 
+class addScreen(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Add Row")
+        self.geometry("300x400")
+        self.config(bg="skyblue")
+        self.parent = parent
 
+        self.name_label = tk.Label(self, text="Name:", bg="skyblue")
+        self.name_input = tk.Entry(self)
+        self.name_label.pack()
+        self.name_input.pack(pady=10)
 
+        self.project_label = tk.Label(self, text="Project:", bg="skyblue")
+        self.project_input = tk.Entry(self)
+        self.project_label.pack()
+        self.project_input.pack(pady=10)
+
+        self.role_label = tk.Label(self, text="Role:", bg="skyblue")
+        self.role_input = tk.Entry(self)
+        self.role_label.pack()
+        self.role_input.pack(pady=10)
+
+        self.time_label = tk.Label(self, text="Percentage of Time Allocated:", bg="skyblue")
+        self.time_input = tk.Entry(self)
+        self.time_label.pack()
+        self.time_input.pack(pady=10)
+
+        self.save_button = tk.Button(self, text="Save", command=self.save_edit, bg="lightgreen")
+        self.save_button.pack(pady=10)
+    def save_edit(self):
+        if self.parent.data.value_check(self.name_input.get(), "name"):
+            pass
+        if self.parent.data.value_check(self.project_input.get(), "project"):
+            pass
+        if self.parent.data.value_check(self.name_input.get(), "name"):
+            pass
+        if self.parent.data.value_check(self.time_input.get(), "time allocated"):
+            pass
+        self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()])
+        self.parent.fill_table()
+        self.destroy()
 
 class csvHandler():
     def __init__(self):
@@ -104,6 +151,24 @@ class csvHandler():
         self.filepath = "allocations.csv"
         pass
 
+    def value_check(self, value, type):
+        error = False
+        type_normalized = type.strip().lower()
+        match (type_normalized):
+            case "name":
+                pass
+            case "project":
+                pass
+            case "role":
+                pass
+            case "time allocated":
+                pass
+            case _:
+                messagebox.showerror(title="Error", message="Value type unknown, Checks fail")
+    def precence_check(self, value):
+        pass
+    def length_check(self, value):
+        pass
     def read(self):
         if not os.path.isfile(self.filepath):
             print("error")
@@ -128,11 +193,11 @@ class csvHandler():
             writer.writerows(self.data)
         pass
 
-    def add_row(self, to_add):
+    def add(self, to_add):
         self.data.append(to_add)
 
-    def delete_row(self):
-        pass
+    def delete(self, index):
+        self.data.pop(index)
 
     def update(self, tree):
         self.data=[]
