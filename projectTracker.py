@@ -2,11 +2,12 @@ import tkinter as tk  # Primary GUI Library
 from tkinter import messagebox
 from tkinter import ttk
 import os  # Used to check if the csv file is present
-import re
+import re # used for format validation
 import csv  # used to read and write from the csv file
 
 
 class ResourceManager(tk.Tk):
+    '''Resource Manager is a class that contains the main landing screen for this application, It displays the csv data in a clear format, '''
     def __init__(self):
         super().__init__()
         self.geometry("800x350")
@@ -96,10 +97,11 @@ class editorScreen(tk.Toplevel):
         self.save_button.pack(pady=10)
     def save_edit(self):
         new_value = self.new_value_input.get()
-        self.parent.data.value_check(new_value, self.col_name)
-        self.parent.tree.set(self.row, column=self.parent.tree["columns"][self.col], value=new_value)
-        self.parent.data.update(self.parent.tree)
+        if self.parent.data.value_check(new_value, self.col_name):
+            self.parent.tree.set(self.row, column=self.parent.tree["columns"][self.col], value=new_value)
+            self.parent.data.update(self.parent.tree)
         self.destroy()
+
 
 class addScreen(tk.Toplevel):
     def __init__(self, parent):
@@ -133,16 +135,14 @@ class addScreen(tk.Toplevel):
         self.save_button.pack(pady=10)
     def save_edit(self):
         if self.parent.data.value_check(self.name_input.get(), "name"):
-            pass
-        if self.parent.data.value_check(self.project_input.get(), "project"):
-            pass
-        if self.parent.data.value_check(self.name_input.get(), "name"):
-            pass
-        if self.parent.data.value_check(self.time_input.get(), "time allocated"):
-            pass
-        self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()])
-        self.parent.fill_table()
+            if self.parent.data.value_check(self.project_input.get(), "project"):
+                if self.parent.data.value_check(self.name_input.get(), "name"):
+                    if self.parent.data.value_check(self.time_input.get(), "time allocated"):
+                        self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()])
+                        self.parent.fill_table()
+
         self.destroy()
+
 
 class csvHandler():
     def __init__(self):
@@ -150,25 +150,85 @@ class csvHandler():
         self.headers = []
         self.filepath = "allocations.csv"
         pass
-
+    def normalize(self, value):
+        return value.strip().lower()
     def value_check(self, value, type):
-        error = False
-        type_normalized = type.strip().lower()
-        match (type_normalized):
-            case "name":
-                pass
-            case "project":
-                pass
-            case "role":
-                pass
-            case "time allocated":
-                pass
-            case _:
-                messagebox.showerror(title="Error", message="Value type unknown, Checks fail")
+        type_normalized = self.normalize(type)
+        try:
+            match (type_normalized):
+                case "name":
+                    if self.precence_check(self.normalize(value)):
+                        if self.length_check(value):
+                            if self.name_format_check(self.normalize(value)):
+                                return True
+                            else:
+                                messagebox.showerror(title="Pattern Error",
+                                                     message="The Name should contain only Letters, hyphens, apostrophes")
+                        else:
+                            messagebox.showerror(title="Length Error",
+                                                 message="Name should be between 3 and 35 characters long")
+                    else:
+                        messagebox.showerror(title="Presence Error",
+                                             message="Please Enter a Value for the name")
+                    return False
+                case "project":
+                    if self.precence_check(self.normalize(value)):
+                        if self.length_check(value):
+                            if self.name_format_check(self.normalize(value)):
+                                return True
+                            else:
+                                messagebox.showerror(title="Pattern Error",
+                                                     message="The Name should contain only Letters, hyphens, apostrophes")
+                        else:
+                            messagebox.showerror(title="Length Error",
+                                                 message="Project Name should be between 3 and 35 characters long")
+                    else:
+                        messagebox.showerror(title="Presence Error",
+                                             message="Please Enter a Value for the project name")
+                    return False
+                case "role":
+                    if self.precence_check(self.normalize(value)):
+                        if self.length_check(value):
+                            if self.name_format_check(self.normalize(value)):
+                                return True
+                            else:
+                                messagebox.showerror(title="Pattern Error",
+                                                     message="The Name should contain only Letters, hyphens, apostrophes")
+                        else:
+                            messagebox.showerror(title="Length Error",
+                                                 message="Role Title should be between 3 and 35 characters long")
+                    else:
+                        messagebox.showerror(title="Presence Error", message="Please Enter a Value for the role title")
+                    return False
+                case "time allocated":
+                    if self.precence_check(value.strip()):
+                        if self.percentage_check(value):
+                            return True
+                        else:
+                            messagebox.showerror(title="Pattern Error",
+                                                 message="Value should be an interger between 1 - 80")
+                    else:
+                        messagebox.showerror(title="Presence Error",
+                                             message="Please Enter a Value for the Time Allocated")
+                case _:
+                    messagebox.showerror(title="Error", message="Value type unknown, Checks fail")
+                    return False
+        except Exception as e:
+            messagebox.showerror(title="Error",
+                                 message=f"An Unknown error has occured: {e}")
+            return False
     def precence_check(self, value):
-        pass
+        if value:
+            return True
+        return False
     def length_check(self, value):
-        pass
+        return 2<len(value)<=35
+    def name_format_check(self, value):
+        pattern = re.compile(r"^[A-Za-z '-]+$")
+        return  bool(pattern.match(value))
+    def percentage_check(self, value):
+        pattern = re.compile(r"\b(80|[1-7]?[0-9])\b|\b(80|[1-7]?[0-9]%)\b")
+        return bool(pattern.match(value))
     def read(self):
         if not os.path.isfile(self.filepath):
             print("error")
@@ -179,10 +239,6 @@ class csvHandler():
                 reader = csv.reader(infile)
                 self.headers = next(reader)
                 self.data = list(reader)
-        except FileNotFoundError:
-            messagebox.showerror(f"Error: File '{self.filepath}' not found.")
-        except csv.Error as e:
-            messagebox.showerror(f"Error: Could not read CSV file. {e}")
         except Exception as e:
             messagebox.showerror(f"An unexpected error occurred: {e}")
 
