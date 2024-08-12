@@ -10,6 +10,7 @@
 + Creative actions like Adding a row or saving a value change should be marked in green
 + The user should be able to double click any value in the table in order to edit the value 
 + the add and edit row actions should open up a new window with input dialogue dependant on the value being changd 
++ 
 
 The program should prevent errors in various circumstances:    
 
