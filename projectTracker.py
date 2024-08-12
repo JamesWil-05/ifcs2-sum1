@@ -161,7 +161,7 @@ class csvHandler():
      additionally this class is used to check a proposed new value to be added to the csv'''
     def __init__(self):
         self.data = [] # this will hold the referenced data
-        self.headers = [] # this holds the headers for each column of the table
+        self.headers = ["Name", "Project", "Role", "Time Allocated"] # this holds the headers for each column of the table
         self.filepath = "allocations.csv" # this is the file that will be read and written to
     def normalize(self, value): # This normalises a value  (used for both the headers and data types
         return value.strip().lower()
@@ -252,7 +252,6 @@ class csvHandler():
         try:
             with open(self.filepath) as infile: # opens file to be read
                 reader = csv.reader(infile)
-                self.headers = next(reader)# sets headers from first line of file
                 self.data = list(reader)# converts each line of the file, bar the first, into a list
         except Exception as e:
             messagebox.showerror(f"An unexpected error occurred: {e}")
@@ -260,7 +259,6 @@ class csvHandler():
     def write(self):
         with open(self.filepath, 'w') as outfile: # opens file to overwrite
             writer = csv.writer(outfile)
-            writer.writerow(self.headers) # writes headers as first line
             writer.writerows(self.data) # writes updated data to file
 
     def add(self, to_add): # function to add a row to data
