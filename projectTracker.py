@@ -67,7 +67,9 @@ class ResourceManager(tk.Tk):
     def edit_val(self, click): # A Method used to collect information for the editor screen, used for changing a value
         row = self.tree.selection()[0] # Gets row id
         col = self.tree.identify_column(click.x) # gets column id
-        column_index = int(col.replace("#", "")) - 1 # converts column id into index format for csv handler
+        print(f"{row}\n{col}")
+        print (type(row), type(col), type(click))
+        column_index = int(col.replace("#", "")) - 1 # converts column id into index format
         column_name = self.tree["columns"][column_index] # gets name of column for error checking
         old_value = self.tree.item(row, "values")[column_index] # gets current value, to autofill the textbox in the new window with it
         editorScreen(self, row, column_index, column_name, old_value) # instantiates the editor screen, setting main window as parent
@@ -163,7 +165,7 @@ class csvHandler():
         self.data = [] # this will hold the referenced data
         self.headers = ["Name", "Project", "Role", "Time Allocated"] # this holds the headers for each column of the table
         self.filepath = "allocations.csv" # this is the file that will be read and written to
-    def normalize(self, value): # This normalises a value  (used for both the headers and data types
+    def normalize(self, value): # This normalises a value  (used for both the headers and data types)
         return value.strip().lower()
     def value_check(self, value, type):
         '''This Function is used to call other funcions based on the type it is called with, the value then goes through several checks.
@@ -232,7 +234,7 @@ class csvHandler():
             messagebox.showerror(title="Error",
                                  message=f"An Unknown error has occured: {e}")
             return False
-    def precence_check(self, value): # checks is there is a value stored in the variable
+    def presence_check(self, value): # checks is there is a value stored in the variable
         if value:
             return True
         return False
@@ -246,7 +248,6 @@ class csvHandler():
         return bool(pattern.match(value))
     def read(self):
         if not os.path.isfile(self.filepath): # checks if file exists
-            print("error")
             messagebox.showinfo(message=f"Error: File '{self.filepath}' does not exist.")
             return
         try:
