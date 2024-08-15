@@ -10,7 +10,7 @@ class ResourceManager(tk.Tk):
     '''Resource Manager is a class that contains the main landing screen for this application, It contains the configs for the window itself,
     as well as the widgets in use on the main screen.
     The Purpose of the window is to display the data loaded from the csv in the treeview widget self.tree.
-    The data is loaded into this window using the csv Handeler Object'''
+    The data is loaded into this window using the csv Handler Object'''
     def __init__(self):
         super().__init__()
         self.geometry("800x350")
@@ -48,7 +48,7 @@ class ResourceManager(tk.Tk):
         self.data.write()
         quit()
     def fill_table(self):
-        '''Method for Filling the treeview with up to date data.
+        '''Method for Filling the treeview with up-to-date data.
          '''
         if self.tree: # Removes previous table, to replace with new data
             self.tree.destroy()
@@ -58,7 +58,7 @@ class ResourceManager(tk.Tk):
         self.tree.config(columns= self.data.headers, #Names columns using headers from the data object
                          show = "headings")
 
-        for col in self.tree["columns"]: # Sets each heading equal to the repective column name
+        for col in self.tree["columns"]: # Sets each heading equal to the respective column name
             self.tree.heading(col, text=col)
         for row in self.data.data: # Inserts data into table
             self.tree.insert("", "end", values=row)
@@ -73,7 +73,7 @@ class ResourceManager(tk.Tk):
         editorScreen(self, row, column_index, column_name, old_value) # instantiates the editor screen, setting main window as parent
 
     def delete_row(self): # A method used to remove a row from the data set
-        if self.tree.selection(): # checks the the user has selected a row to delete
+        if self.tree.selection(): # checks the user has selected a row to delete
             row = self.tree.selection()[0]# gets the first row selected (in case multiple were selected)
             row_index = self.tree.index(row)
             self.data.delete(row_index)# deletes the row from the main data set using row index
@@ -123,7 +123,7 @@ class addScreen(tk.Toplevel):
         self.config(bg="skyblue")
         self.parent = parent
 
-        #Each input box is creates along side a label describing what is required for each input
+        #Each input box is created alongside a label describing what is required for each input
         self.name_label = tk.Label(self, text="Name:", bg="skyblue")
         self.name_input = tk.Entry(self)
         self.name_label.pack()
@@ -155,14 +155,14 @@ class addScreen(tk.Toplevel):
             if self.parent.data.value_check(project, "project"):
                 if self.parent.data.value_check(role, "name"):
                     if self.parent.data.value_check(time, "time allocated"):
-                        self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()]) # adds data to csv handeler
+                        self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()]) # adds data to csv handler
                         self.parent.fill_table() # refreshes the table with new data
         self.destroy() # closes the add row window
 
 class csvHandler():
-    '''A class used as a ultility for managing the csv data throughout the program
+    '''A class used as a utility for managing the csv data throughout the program
      This class is used to read and write the data to the csv file as well as hold the data referenced by the treeview widget,
-     including fuctions to append, update and delete data from this dataset
+     including functions to append, update and delete data from this dataset
      additionally this class is used to check a proposed new value to be added to the csv'''
     def __init__(self):
         self.data = [] # this will hold the referenced data
@@ -173,7 +173,7 @@ class csvHandler():
     def normalize_title(self, value): # This will update a value for storing in table
         return self.normalize(value).title()
     def value_check(self, value, type):
-        '''This Function is used to call other funcions based on the type it is called with, the value then goes through several checks.
+        '''This Function is used to call other functions based on the type it is called with, the value then goes through several checks.
         If the value fails any check then a message box is triggered and the function returns false, informing the caller not to make the proposed changes'''
         type_normalized = self.normalize(type)
         try:
@@ -228,16 +228,17 @@ class csvHandler():
                             return True
                         else:
                             messagebox.showerror(title="Pattern Error",
-                                                 message="Value should be an interger between 1 - 80")
+                                                 message="Value should be an integer between 1 - 80")
                     else:
                         messagebox.showerror(title="Presence Error",
                                              message="Please Enter a Value for the Time Allocated")
+                    return False
                 case _:
                     messagebox.showerror(title="Error", message="Value type unknown, Checks fail")
                     return False
         except Exception as e: # incase an unknown error occurs during checks like value error, will return false to caller
             messagebox.showerror(title="Error",
-                                 message=f"An Unknown error has occured: {e}")
+                                 message=f"An Unknown error has occurred: {e}")
             return False
     def presence_check(self, value): # checks is there is a value stored in the variable
         if value:
