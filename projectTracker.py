@@ -67,8 +67,6 @@ class ResourceManager(tk.Tk):
     def edit_val(self, click): # A Method used to collect information for the editor screen, used for changing a value
         row = self.tree.selection()[0] # Gets row id
         col = self.tree.identify_column(click.x) # gets column id
-        print(f"{row}\n{col}")
-        print (type(row), type(col), type(click))
         column_index = int(col.replace("#", "")) - 1 # converts column id into index format
         column_name = self.tree["columns"][column_index] # gets name of column for error checking
         old_value = self.tree.item(row, "values")[column_index] # gets current value, to autofill the textbox in the new window with it
@@ -110,6 +108,7 @@ class editorScreen(tk.Toplevel):
     def save_edit(self):
         new_value = self.new_value_input.get() # gets the new input
         if self.parent.data.value_check(new_value, self.col_name): #runs checks based off the column name ot determine the required checks
+            new_value = self.parent.data.normalize_title(new_value) # since percentage is stored as string
             self.parent.tree.set(self.row, column=self.parent.tree["columns"][self.col], value=new_value) #updates tree with new value
             self.parent.data.update(self.parent.tree) #uses tree to update dataset
         self.destroy() # close window once process is finished
@@ -148,10 +147,14 @@ class addScreen(tk.Toplevel):
         self.save_button = tk.Button(self, text="Save", command=self.save_edit, bg="lightgreen") # A button to trigger the value checks and saving of the data
         self.save_button.pack(pady=10)
     def save_edit(self):
-        if self.parent.data.value_check(self.name_input.get(), "name"): # each value is tested, and is all pass then the data is added
-            if self.parent.data.value_check(self.project_input.get(), "project"):
-                if self.parent.data.value_check(self.name_input.get(), "name"):
-                    if self.parent.data.value_check(self.time_input.get(), "time allocated"):
+        name = self.parent.data.normalize_title(self.name_input.get())
+        project = self.parent.data.normalize_title(self.project_input.get())
+        role = self.parent.data.normalize_title(self.role_input.get())
+        time = self.time_input.get()
+        if self.parent.data.value_check(name, "name"): # each value is tested, and is all pass then the data is added
+            if self.parent.data.value_check(project, "project"):
+                if self.parent.data.value_check(role, "name"):
+                    if self.parent.data.value_check(time, "time allocated"):
                         self.parent.data.add([self.name_input.get(),self.project_input.get(),self.role_input.get(),self.time_input.get()]) # adds data to csv handeler
                         self.parent.fill_table() # refreshes the table with new data
         self.destroy() # closes the add row window
@@ -167,6 +170,8 @@ class csvHandler():
         self.filepath = "allocations.csv" # this is the file that will be read and written to
     def normalize(self, value): # This normalises a value  (used for both the headers and data types)
         return value.strip().lower()
+    def normalize_title(self, value): # This will update a value for storing in table
+        return self.normalize(value).title()
     def value_check(self, value, type):
         '''This Function is used to call other funcions based on the type it is called with, the value then goes through several checks.
         If the value fails any check then a message box is triggered and the function returns false, informing the caller not to make the proposed changes'''
@@ -174,7 +179,7 @@ class csvHandler():
         try:
             match (type_normalized): # Switch statement for each value heading
                 case "name":
-                    if self.precence_check(self.normalize(value)):
+                    if self.presence_check(self.normalize(value)):
                         if self.length_check(value):
                             if self.name_format_check(self.normalize(value)):
                                 return True # if all checks pass return true
@@ -189,7 +194,7 @@ class csvHandler():
                                              message="Please Enter a Value for the name")
                     return False
                 case "project":
-                    if self.precence_check(self.normalize(value)):
+                    if self.presence_check(self.normalize(value)):
                         if self.length_check(value):
                             if self.name_format_check(self.normalize(value)):
                                 return True
@@ -204,7 +209,7 @@ class csvHandler():
                                              message="Please Enter a Value for the project name")
                     return False
                 case "role":
-                    if self.precence_check(self.normalize(value)):
+                    if self.presence_check(self.normalize(value)):
                         if self.length_check(value):
                             if self.name_format_check(self.normalize(value)):
                                 return True
@@ -218,7 +223,7 @@ class csvHandler():
                         messagebox.showerror(title="Presence Error", message="Please Enter a Value for the role title")
                     return False
                 case "time allocated":
-                    if self.precence_check(value.strip()):
+                    if self.presence_check(value.strip()):
                         if self.percentage_check(value):
                             return True
                         else:
