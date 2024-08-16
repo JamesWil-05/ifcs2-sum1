@@ -250,7 +250,7 @@ class csvHandler():
         pattern = re.compile(r"^[A-Za-z '-]+$")
         return  bool(pattern.match(value))
     def percentage_check(self, value):
-        pattern = re.compile(r"\b([1-7]?[1-9]|[1-8]0)%?\b") # checks if the number is a number between 1 and 80 as the percent should be between these two. Also checks for and allows the inclusion of a %
+        pattern = re.compile(r"^([1-7]?[1-9]|[1-8]0)%?$") # checks if the number is a number between 1 and 80 as the percent should be between these two. Also checks for and allows the inclusion of a %
         return bool(pattern.match(value))
     def read(self):
         if not os.path.isfile(self.filepath): # checks if file exists

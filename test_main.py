@@ -1,12 +1,13 @@
-from unittest.mock import patch, mock_open
+from unittest.mock import patch #Used to mock error message boxes in my GUI
 
-from projectTracker import csvHandler
+from projectTracker import csvHandler # Main class being tested as this class handles the values and data
 
-def setup():
+def setup(): #function to create a test object
     csv_test = csvHandler()
+    csv_test.filepath = "allocations_test.csv" # sets test data file
     return csv_test
 
-def test_value_checks_valid():
+def test_value_checks_valid(): # checks valid values return true
     csv_test = setup()
 
     assert csv_test.value_check("John Doe", "name") == True
@@ -22,7 +23,7 @@ def test_value_checks_valid():
 
 '''The same checks are preformed on Name, Project Title and Role Title, so each test function will test for errors with different parameters'''
 @patch('tkinter.messagebox.showerror')
-def test_value_checks_invalid_name (mock_errorbox):
+def test_value_checks_invalid_name (mock_errorbox): # checks each type of invalid name error
     csv_test = setup()
     assert csv_test.value_check("68476", "name")==False
     mock_errorbox.assert_called_with(title="Pattern Error", message="The Name should contain only Letters, hyphens, apostrophes")
@@ -34,7 +35,7 @@ def test_value_checks_invalid_name (mock_errorbox):
     mock_errorbox.assert_called_with(title="Presence Error", message="Please Enter a Value for the name")
 
 @patch('tkinter.messagebox.showerror')
-def test_value_checks_invalid_project (mock_errorbox):
+def test_value_checks_invalid_project (mock_errorbox): # checks each type of invalid project name error
     csv_test = setup()
     assert csv_test.value_check("500.83", "project")==False
     mock_errorbox.assert_called_with(title="Pattern Error", message="The Name should contain only Letters, hyphens, apostrophes")
@@ -46,7 +47,7 @@ def test_value_checks_invalid_project (mock_errorbox):
     mock_errorbox.assert_called_with(title="Presence Error", message="Please Enter a Value for the project name")
 
 @patch('tkinter.messagebox.showerror')
-def test_value_checks_invalid_role (mock_errorbox):
+def test_value_checks_invalid_role (mock_errorbox): # checks each type of invalid role title error
     csv_test = setup()
     assert csv_test.value_check("000", "role")==False
     mock_errorbox.assert_called_with(title="Pattern Error", message="The Name should contain only Letters, hyphens, apostrophes")
@@ -54,11 +55,11 @@ def test_value_checks_invalid_role (mock_errorbox):
     assert csv_test.value_check("50", "role")==False
     mock_errorbox.assert_called_with(title="Length Error", message="Role Title should be between 3 and 35 characters long")
 
-    assert csv_test.value_check(" ", "role") == False #non-breaking space character ctrl shift U 00a0
+    assert csv_test.value_check("                   ", "role") == False
     mock_errorbox.assert_called_with(title="Presence Error", message="Please Enter a Value for the role title")
 
 @patch('tkinter.messagebox.showerror')
-def test_value_checks_invalid_time (mock_errorbox):
+def test_value_checks_invalid_time (mock_errorbox): # checks each type of invalid time allocation error
     csv_test = setup()
     assert csv_test.value_check("500.83", "time allocated")==False
     mock_errorbox.assert_called_with(title="Pattern Error", message="Value should be an integer between 1 - 80")
@@ -70,7 +71,7 @@ def test_value_checks_invalid_time (mock_errorbox):
     mock_errorbox.assert_called_with(title="Presence Error", message="Please Enter a Value for the name")
 
 @patch('tkinter.messagebox.showerror')
-def test_value_checks_edge_cases (mock_errorbox):
+def test_value_checks_edge_cases (mock_errorbox): # tests possible edge cases
     csv_test = setup()
     assert csv_test.value_check("1", "time allocated")==True
 
@@ -80,11 +81,14 @@ def test_value_checks_edge_cases (mock_errorbox):
     assert csv_test.value_check("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "name") == False
     mock_errorbox.assert_called_with(title="Length Error", message="Name should be between 3 and 35 characters long")
 
-def test_data_read():
+    assert csv_test.value_check(" ", "role") == False #non-breaking space character ctrl shift U 00a0
+    mock_errorbox.assert_called_with(title="Presence Error", message="Please Enter a Value for the role title")
+
+def test_data_read(): # tests if example file is read correctly
     csv_test = setup()
 
     csv_test.read()
-    assert csv_test.get() == [['John Smith', ' VR Training', ' Project Manager', ' 50'], ['Jane Doe', ' Chatbot', ' Developer', ' 30'], ['Katie Phillips', ' Automation', ' Business Analyst', ' 60']]
+    assert csv_test.get() == [['John Smith', 'VR Training', 'Project Manager', '50'], ['Jane Doe', 'Chatbot', 'Developer', '30'], ['Katie Phillips', 'Automation', 'Business Analyst', '60']]
 
 def test_data_add():
     csv_test = setup()
@@ -97,7 +101,17 @@ def test_data_delete():
     csv_test = setup()
     csv_test.read()
     csv_test.delete(2)
-    assert csv_test.get() == [['John Smith', ' VR Training', ' Project Manager', ' 50'], ['Jane Doe', ' Chatbot', ' Developer', ' 30']]
+    assert csv_test.get() == [['John Smith', 'VR Training', 'Project Manager', '50'], ['Jane Doe', 'Chatbot', 'Developer', '30']]
+
+def test_data_write(): #Tests
+    csv_test = setup()
+    csv_test.read()
+    csv_test.delete(2)
+    csv_test.write()
+    csv_test.read()
+    assert csv_test.get() == [['John Smith', 'VR Training', 'Project Manager', '50'], ['Jane Doe', 'Chatbot', 'Developer', '30']]
+    csv_test.add(['Katie Phillips', ' Automation', ' Business Analyst', ' 60'])
+    csv_test.write()
 
 def test_data_normalize():
     csv_test = setup()
@@ -107,6 +121,6 @@ def test_data_normalize():
     assert csv_test.normalize_title("maisy hudson") == "Maisy Hudson"
     assert csv_test.normalize_title("chatbot (proof of concept)") == "Chatbot (Proof Of Concept)"
 
-    assert csv_test.normalize("50 %") == "50 %"
+    assert csv_test.normalize_title("50 %") == "50 %"
 
 
