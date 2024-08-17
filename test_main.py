@@ -103,14 +103,14 @@ def test_data_delete():
     csv_test.delete(2)
     assert csv_test.get() == [['John Smith', 'VR Training', 'Project Manager', '50'], ['Jane Doe', 'Chatbot', 'Developer', '30']]
 
-def test_data_write(): #Tests
+def test_data_write():
     csv_test = setup()
     csv_test.read()
     csv_test.delete(2)
     csv_test.write()
     csv_test.read()
     assert csv_test.get() == [['John Smith', 'VR Training', 'Project Manager', '50'], ['Jane Doe', 'Chatbot', 'Developer', '30']]
-    csv_test.add(['Katie Phillips', ' Automation', ' Business Analyst', ' 60'])
+    csv_test.add(['Katie Phillips', 'Automation', 'Business Analyst', '60'])
     csv_test.write()
 
 def test_data_normalize():
